@@ -1,0 +1,6 @@
+.DS_Store
+
+# demo videos (too large for GitHub git)
+livekit-voice-ui/assets/*.mov
+livekit-voice-ui/assets/*.mp4
+

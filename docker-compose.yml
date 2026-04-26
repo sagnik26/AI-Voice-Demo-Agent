@@ -1,0 +1,18 @@
+services:
+  voice-ui:
+    build:
+      context: ./livekit-voice-ui
+    env_file:
+      - ./livekit-voice-ui/.env
+    ports:
+      - "${VOICE_UI_PORT:-3000}:3000"
+    depends_on:
+      - voice-agent
+    restart: unless-stopped
+
+  voice-agent:
+    build:
+      context: ./livekit-voice-agent
+    env_file:
+      - ./livekit-voice-agent/.env
+    restart: unless-stopped

@@ -1,0 +1,6 @@
+.env
+.venv
+
+# python bytecode / caches
+__pycache__/
+*.py[cod]
