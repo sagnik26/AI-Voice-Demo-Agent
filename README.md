@@ -44,17 +44,12 @@ livekit-voice-ui/
     └── utils/
 ```
 
-## Requirements
+## Running locally
 
-- Docker and Docker Compose
-- LiveKit Cloud project credentials
-- OpenAI API key
+### Requirements to run locally
 
-For local non-Docker development, you also need:
-
-- Node.js
-- Python 3.12+
-- `uv`
+- LiveKit Cloud project credentials (`LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`)
+- OpenAI API key (`OPENAI_API_KEY`)
 
 ## Environment Variables
 
@@ -84,7 +79,9 @@ OPENAI_API_KEY=sk-your_openai_api_key
 
 The UI uses LiveKit credentials to mint room tokens. The Python agent uses LiveKit credentials to register the worker and `OPENAI_API_KEY` for LLM, STT, and TTS.
 
-## Run With Docker
+### Docker way
+
+- Docker and Docker Compose
 
 From the repository root:
 
@@ -104,7 +101,11 @@ To use a different host port for the UI:
 VOICE_UI_PORT=3001 docker compose up --build
 ```
 
-## Local Development
+### Non-Docker way
+
+- Node.js
+- Python 3.12+
+- `uv`
 
 Run the Python agent:
 
