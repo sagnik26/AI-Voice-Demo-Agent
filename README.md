@@ -2,10 +2,6 @@
 
 This repository contains a full-stack LiveKit voice agent demo. The app lets a user join a live voice call with Hailey, an AI product demo agent. Hailey introduces herself, collects a short product description, asks two qualifying questions, and can show a personalized 60-second walkthrough script in the UI.
 
-## Demo video
-
-[demo video](./livekit-voice-ui/assets/Demo.mov)
-
 ## Features
 
 - **Clean chat-style voice UI**: live transcript bubbles for both the user and Hailey.
