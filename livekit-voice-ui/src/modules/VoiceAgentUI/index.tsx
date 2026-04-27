@@ -28,7 +28,10 @@ import {
   WalkthroughCard,
   WelcomePanel,
 } from "@/src/components/voice-agent";
-import { takePendingDemoRoom } from "@/src/utils/demoRoomHandoff";
+import {
+  setPendingDemoRoom,
+  takePendingDemoRoom,
+} from "@/src/utils/demoRoomHandoff";
 
 const RELATED_WALKTHROUGH_TERMS = new Set([
   "adjust",
@@ -140,6 +143,8 @@ export default function VoiceAgentUI({ autoConnect = false }: VoiceAgentUIProps)
   const messageIdRef = useRef(0);
   const autoConnectStartedRef = useRef(false);
   const lastUserTranscriptAtRef = useRef(0);
+  const allowUnmountDisconnectRef = useRef(false);
+  const handoffRoomRef = useRef<ReturnType<typeof takePendingDemoRoom>>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const userAnalyserRef = useRef<AnalyserNode | null>(null);
   const agentAnalyserRef = useRef<AnalyserNode | null>(null);
@@ -185,16 +190,13 @@ export default function VoiceAgentUI({ autoConnect = false }: VoiceAgentUIProps)
     agentAnalyser.smoothingTimeConstant = 0.8;
     agentAnalyserRef.current = agentAnalyser;
 
-    // Agent audio: meter the HTMLAudioElement that LiveKit attaches remote audio to.
     try {
       const agentSource = audioCtx.createMediaElementSource(audioEl);
       agentSource.connect(agentAnalyser);
       agentAnalyser.connect(audioCtx.destination);
     } catch {
-      // Some browsers disallow creating multiple MediaElementSources for one element.
     }
 
-    // User mic: meter the currently published local microphone track if present.
     try {
       const pubs: any[] = Array.from(
         (room.localParticipant as any).trackPublications?.values?.() ?? [],
@@ -213,7 +215,6 @@ export default function VoiceAgentUI({ autoConnect = false }: VoiceAgentUIProps)
         userSource.connect(userAnalyser);
       }
     } catch {
-      // If we can't access the mic track, agent metering still works.
     }
 
     const calcLevel = (analyser: AnalyserNode | null) => {
@@ -241,7 +242,22 @@ export default function VoiceAgentUI({ autoConnect = false }: VoiceAgentUIProps)
   }, [agentSpeaking, stopMeters, userSpeaking]);
 
   useEffect(() => {
+    const disconnectTimer = window.setTimeout(() => {
+      allowUnmountDisconnectRef.current = true;
+    }, 1000);
+
     return () => {
+      window.clearTimeout(disconnectTimer);
+      if (
+        process.env.NODE_ENV === "development" &&
+        !allowUnmountDisconnectRef.current
+      ) {
+        if (handoffRoomRef.current) {
+          setPendingDemoRoom(handoffRoomRef.current);
+        }
+        return;
+      }
+
       if (agentSilenceTimerRef.current !== null) {
         window.clearTimeout(agentSilenceTimerRef.current);
         agentSilenceTimerRef.current = null;
@@ -418,8 +434,11 @@ export default function VoiceAgentUI({ autoConnect = false }: VoiceAgentUIProps)
   const attachAudioTrack = useCallback(
     (track: RemoteTrack) => {
       if (track.kind !== Track.Kind.Audio || !audioRef.current) return;
+      audioRef.current.muted = false;
+      audioRef.current.volume = 1;
       track.attach(audioRef.current);
       void audioRef.current.play().catch(() => {
+        void roomRef.current?.startAudio?.().catch(() => undefined);
         addSystemMessage("Tap the page once if the browser blocks autoplay.");
       });
     },
@@ -647,6 +666,7 @@ export default function VoiceAgentUI({ autoConnect = false }: VoiceAgentUIProps)
     const handoff = takePendingDemoRoom();
     if (!handoff || roomRef.current) return;
 
+    handoffRoomRef.current = handoff;
     roomRef.current = handoff.room;
     autoConnectStartedRef.current = true;
     bindRoomEvents(handoff.room);
@@ -682,7 +702,7 @@ export default function VoiceAgentUI({ autoConnect = false }: VoiceAgentUIProps)
         padding: 14,
       }}
     >
-      <audio ref={audioRef} autoPlay />
+      <audio ref={audioRef} autoPlay playsInline />
 
       <div
         style={{
