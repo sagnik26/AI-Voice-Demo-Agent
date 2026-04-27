@@ -7,20 +7,15 @@ import type { TokenResponse } from "@/src/types";
 import { setPendingDemoRoom } from "@/src/utils/demoRoomHandoff";
 import { T } from "@/src/utils/theme";
 
-const AGENT_JOIN_TIMEOUT_MS = 12000;
+const AGENT_JOIN_TIMEOUT_MS = 30000;
 
 function waitForAgentJoin(room: Room) {
-  if (room.remoteParticipants.size > 0) {
-    return Promise.resolve();
-  }
-
   return new Promise<void>((resolve, reject) => {
     let settled = false;
     let timeoutId: number | undefined;
 
     const cleanup = () => {
       window.clearTimeout(timeoutId);
-      room.off(RoomEvent.ParticipantConnected, finish);
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.Disconnected, handleDisconnected);
     };
@@ -54,7 +49,6 @@ function waitForAgentJoin(room: Room) {
     timeoutId = window.setTimeout(() => {
       fail("Hailey did not join the demo room in time. Please try again.");
     }, AGENT_JOIN_TIMEOUT_MS);
-    room.on(RoomEvent.ParticipantConnected, finish);
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.Disconnected, handleDisconnected);
   });
