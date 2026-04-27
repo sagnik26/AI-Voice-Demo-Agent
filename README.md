@@ -5,7 +5,11 @@ This repository contains a full-stack LiveKit voice agent demo. The app lets a u
 
 
 
-https://github.com/user-attachments/assets/c82bdd63-bc49-4019-bbc6-b25e7f7b1fb5
+
+
+https://github.com/user-attachments/assets/1f53209b-bdc4-4f5e-aab1-52046160b72e
+
+
 
 
 
